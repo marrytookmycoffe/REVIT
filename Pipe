@@ -1,0 +1,56 @@
+ public void Createpipe (ExternalCommandData commandData)
+        {
+            UIApplication uiapp = commandData.Application;
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+            Autodesk.Revit.DB.Document doc = uidoc.Document;
+
+            FilteredElementCollector filteredElementCollector = new FilteredElementCollector(doc);
+            filteredElementCollector.OfCategory(BuiltInCategory.OST_PipeCurves);
+            filteredElementCollector.OfClass(typeof( PipeType));
+            PipeType pipe = null;
+            // serching for all pipe type i have
+            foreach (PipeType type in filteredElementCollector)
+            {
+            // you can put some if, i just took last one 
+                dialog = dialog + type.Name.ToString()+ "\n";
+                pipe = type;
+            }
+
+            List<XYZ> lista = this.ListaXYZ();
+
+            //first systemtypeid
+            FilteredElementCollector filteredElementCollector2 = new FilteredElementCollector(doc);
+            filteredElementCollector2.OfCategory(BuiltInCategory.OST_PipingSystem);
+            filteredElementCollector2.OfClass(typeof(PipingSystemType));
+
+            dialog = "";
+            ElementId mojeid = null;
+            
+            //
+            foreach (ElementId pst in filteredElementCollector2.ToElementIds())
+            {
+                if(doc.GetElement(pst).Name.ToLower() == "Ciepła woda użytkowa".ToLower())
+                {
+
+                dialog = dialog + pst.ToString() + "\n";
+                mojeid = pst;
+                }
+            }
+
+            List<XYZ> moja = ListaXYZ();
+            XYZ a = new XYZ(0,0,0);
+            XYZ b = new XYZ(3,2,2);
+            
+            
+
+            Transaction trans = new Transaction(doc);
+            trans.Start("start");
+            Level level = Level.Create(doc, 0.00);
+
+            TaskDialog.Show("test", dialog);
+            Pipe pipe2 = Pipe.Create(doc, mojeid, pipe.Id, level.Id, a, b);
+            // and we did it, latter i will write some explenesiuon why it work like that 
+            trans.Commit();
+            return;
+        }
