@@ -5,24 +5,24 @@
             Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
             Autodesk.Revit.DB.Document doc = uidoc.Document;
 
-            FilteredElementCollector filteredElementCollector = new FilteredElementCollector(doc);
-            filteredElementCollector.OfCategory(BuiltInCategory.OST_PipeCurves);
-            filteredElementCollector.OfClass(typeof( PipeType));
-            PipeType pipe = null;
+            //this one will take all elements from document.
+            FilteredElementCollector filteredElementCollector = new FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_PipeCurves).OfClass(typeof( PipeType));
+            
+            PipeType pipeTYPE = null;
             // serching for all pipe type i have
             foreach (PipeType type in filteredElementCollector)
             {
-            // you can put some if, i just took last one 
+            // you can put some "if", i just took first one. serch by the name only if you are sure that it will be alweys the same name
+            //if it is posible use id, it will be more universal for every language
                 dialog = dialog + type.Name.ToString()+ "\n";
-                pipe = type;
+                pipeTYPE = type; 
+                continue;
             }
 
-            List<XYZ> lista = this.ListaXYZ();
-
             //first systemtypeid
-            FilteredElementCollector filteredElementCollector2 = new FilteredElementCollector(doc);
-            filteredElementCollector2.OfCategory(BuiltInCategory.OST_PipingSystem);
-            filteredElementCollector2.OfClass(typeof(PipingSystemType));
+            FilteredElementCollector filteredElementCollector2 = new FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_PipingSystem).OfClass(typeof(PipingSystemType));
 
             dialog = "";
             ElementId mojeid = null;
@@ -38,7 +38,7 @@
                 }
             }
 
-            List<XYZ> moja = ListaXYZ();
+            
             XYZ a = new XYZ(0,0,0);
             XYZ b = new XYZ(3,2,2);
             
@@ -46,11 +46,16 @@
 
             Transaction trans = new Transaction(doc);
             trans.Start("start");
+            // i create here a new level to with pipe will be adres, i sugest to alweys check if level that we what exist 
+            // and if not then create it. remeber that if in project you will delete this level pipes will disapere to.
             Level level = Level.Create(doc, 0.00);
 
-            TaskDialog.Show("test", dialog);
-            Pipe pipe2 = Pipe.Create(doc, mojeid, pipe.Id, level.Id, a, b);
-            // and we did it, latter i will write some explenesiuon why it work like that 
+            TaskDialog.Show("test", dialog); // only for inforamtion you can(and should delet it with all dialog
+            
+            Pipe pipe = Pipe.Create(doc, mojeid, pipeTYPE.Id, level.Id, a, b);
+            // importent thing to know is that after create pipe you can't use pipe.PipeType.id or pipe.PipingStystemType.id
+            // to create another one. pipe.PipeType.id != ppipeTYPE.id
+            
             trans.Commit();
             return;
         }
