@@ -1,0 +1,36 @@
+        /// <summary>
+        /// Function that create a single line from 0,0,0 to 10,10,0. it work only in Family project
+        /// </summary>
+        /// <param name="doc"></param>
+        public void modelLine (Document doc)
+        {
+            using (Transaction transaction = new Transaction(doc))
+            {
+                transaction.Start("Create Line");
+
+                XYZ startPoint = new XYZ(0, 0, 0);
+                XYZ endPoint = new XYZ(10, 10, 0);
+                // create Line from start to end point
+                Line geomLine = Line.CreateBound(startPoint, endPoint);
+
+                // Create a geometry plane in Revit application from Frame
+                //base point
+                XYZ origin = new XYZ(0, 0, 0);
+                //vectors 
+                XYZ vec1 = new XYZ(1, 0, 0);
+                XYZ vec2 = new XYZ(0, 1, 0);
+                XYZ vec3 = new XYZ(0, 0, 1);
+                Frame fr = new Frame(origin, vec1, vec2, vec3);
+                Plane geomPlane = Plane.Create(fr);
+                // Create a sketch plane in current document
+                SketchPlane sketch = SketchPlane.Create(doc, geomPlane);
+                // Create a ModelLine element using the created geometry line and sketch plane
+                try
+                {
+                // see that I use FamilyCreate, it is because I what to do it in family project
+                    ModelLine line = doc.FamilyCreate.NewModelCurve(geomLine, sketch) as ModelLine; 
+                }
+                catch (Autodesk.Revit.Exceptions.ArgumentException) { TaskDialog.Show("alert", "Not able to create Line."); }
+                transaction.Commit();
+            }
+        }
